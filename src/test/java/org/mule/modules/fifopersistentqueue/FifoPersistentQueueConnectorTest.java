@@ -9,14 +9,14 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.mule.api.MuleEvent;
-import org.mule.modules.tests.ConnectorTestCase;
-import org.mule.transport.NullPayload;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mule.api.MuleEvent;
+import org.mule.api.registry.MuleRegistry;
+import org.mule.modules.tests.ConnectorTestCase;
+import org.mule.transport.NullPayload;
 
 public class FifoPersistentQueueConnectorTest extends ConnectorTestCase {
 	
@@ -228,5 +228,24 @@ public class FifoPersistentQueueConnectorTest extends ConnectorTestCase {
     	//check we have the correct number of elements in queue (all elements should have been removed)
     	result = runFlow("sizeFlow");
     	Assert.assertEquals(0L, result.getMessage().getPayload());
+    }
+    
+    @Test
+    public void initialiseConnector() throws Exception{
+    	
+    	MuleRegistry registry = muleContext.getRegistry();
+    	
+    	//get the connector
+    	FifoQueueConnector connector = (FifoQueueConnector) registry.lookupObject("fifoQueueConnector");
+    	
+    	//destroy the connector
+    	connector.disposeConnector();
+    	
+    	//recreate the connector
+    	connector.initialiseConnector();
+    	
+    	//since status should be exactly the same, lets try to drain all
+    	testDrainAll();
+    	
     }
 }

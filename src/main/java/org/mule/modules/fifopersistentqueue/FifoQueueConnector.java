@@ -19,6 +19,8 @@ import org.mule.api.annotations.lifecycle.Stop;
 import org.mule.api.annotations.param.Payload;
 import org.mule.api.store.ListableObjectStore;
 import org.mule.api.store.ObjectStoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FIFO Queue Connector
@@ -34,6 +36,8 @@ public class FifoQueueConnector {
 	 */
 	@Configurable
 	private ListableObjectStore<Serializable> objectStore;
+	
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	// @Configurable
 	// @Default(value="false")
@@ -44,7 +48,7 @@ public class FifoQueueConnector {
 	 */
 	private Map<String, QueuePointer> pointers = new HashMap<String, QueuePointer>();
 
-	private static final String SEPARATOR = "$";
+	private static final String SEPARATOR = ":::";
 	private static final String KEY = "%s" + SEPARATOR + "%d";
 	private static final String STATUS = "status";
 	private static final String STATUS_KEY = "%s" + SEPARATOR + STATUS;
@@ -95,16 +99,19 @@ public class FifoQueueConnector {
 			else {
 				Long sequenceNumber = Long.parseLong(separatedKey[1]);
 
-				if (pointer.getHead() < sequenceNumber) {
+				if (pointer.getHead() > sequenceNumber) {
 					pointer.setHead(sequenceNumber);
 				}
 
-				if (pointer.getTail() > sequenceNumber) {
+				//tail contains the pointer to the next available (not current)
+				sequenceNumber++;
+				if (pointer.getTail() < sequenceNumber) {
 					pointer.setTail(sequenceNumber);
 				}
 			}
-
 		}
+		
+		logger.info("Initialisation complete, status restored");
 	}
 
 	/**
@@ -116,6 +123,7 @@ public class FifoQueueConnector {
 	 */
 	@Stop
 	public void disposeConnector() throws ObjectStoreException {
+		pointers.clear();
 		objectStore.close();
 	}
 

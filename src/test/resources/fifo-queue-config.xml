@@ -9,7 +9,7 @@
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/fifo-queue http://www.mulesoft.org/schema/mule/fifo-queue/1.0/mule-fifo-queue.xsd">
 
-    <fifo-queue:config objectStore-ref="_defaultUserObjectStore" />
+    <fifo-queue:config name="fifoQueueConnector" objectStore-ref="_defaultUserObjectStore" />
 
     <flow name="putFlow">
         <fifo-queue:put queue="queue1"/>
