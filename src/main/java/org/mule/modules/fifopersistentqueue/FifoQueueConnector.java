@@ -124,7 +124,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Put a new message on the queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:put}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -164,7 +164,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Peak the head of the queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:peak}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -184,7 +184,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Peak a message from all queues with status OK
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:peak-all}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all}
 	 * 
 	 * @return A list of messages, i.e. the head of every queue (with status OK)
 	 * @throws ObjectStoreException
@@ -231,7 +231,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Take (remove) a message from the head of the queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:take}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -251,7 +251,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Take (remove) a message from all queues with status OK
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:take-all}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all}
 	 * 
 	 * @return A list of messages, i.e. the head of every queue (with status OK)
 	 * @throws ObjectStoreException
@@ -298,7 +298,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Take all items in a queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:drain}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -318,7 +318,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Take all items in all queues
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:drain-all}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain-all}
 	 * 
 	 * @return A map of lists of all items in all queues, in FIFO order by queue
 	 * @throws ObjectStoreException
@@ -356,7 +356,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Get the size of the queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:size}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:size}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -375,7 +375,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Retrieve the current status of the queue
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:status}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:status}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -394,7 +394,7 @@ public class FifoQueueConnector {
 	 * 
 	 * Set the queue status to error. This will stop the queue from returning any messages
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:mark-error}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:mark-error}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -411,7 +411,7 @@ public class FifoQueueConnector {
 	 * 
 	 * This will mark the queue error free, hence it will start returning messages
 	 * 
-	 * {@sample.xml ../../../doc/fifo-persistent-queue-connector.xml.sample fifo-queue:resolve-error}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:resolve-error}
 	 * 
 	 * @param queue
 	 *            The queue name
