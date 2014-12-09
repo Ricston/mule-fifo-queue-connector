@@ -1,0 +1,43 @@
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:put) -->
+    <fifo-persistent-queue:put queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:put) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:peak) -->
+    <fifo-persistent-queue:peak queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:peak) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:take) -->
+    <fifo-persistent-queue:take queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:take) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:size) -->
+    <fifo-persistent-queue:size queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:size) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:status) -->
+    <fifo-persistent-queue:status queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:status) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:mark-error) -->
+    <fifo-persistent-queue:mark-error queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:mark-error) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:resolve-error) -->
+    <fifo-persistent-queue:resolve-error queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:resolve-error) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:peak-all) -->
+    <fifo-persistent-queue:peak-all />
+<!-- END_INCLUDE(fifo-persistent-queue:peak-all) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:take-all) -->
+    <fifo-persistent-queue:take-all />
+<!-- END_INCLUDE(fifo-persistent-queue:take-all) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:drain) -->
+    <fifo-persistent-queue:drain queue="queue1" />
+<!-- END_INCLUDE(fifo-persistent-queue:drain) -->
+
+<!-- BEGIN_INCLUDE(fifo-persistent-queue:drain-all) -->
+    <fifo-persistent-queue:drain-all />
+<!-- END_INCLUDE(fifo-persistent-queue:drain-all) -->
