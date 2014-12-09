@@ -23,9 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * FIFO Queue Connector
+ * FIFO Queue Connector.
  * 
- * Using an object store to back a single threaded queue
+ * Using an object store to back single threaded queues.
  * 
  * @author MuleSoft, Inc.
  */
