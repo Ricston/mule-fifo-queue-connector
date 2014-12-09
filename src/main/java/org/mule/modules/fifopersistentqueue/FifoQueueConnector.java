@@ -36,7 +36,7 @@ public class FifoQueueConnector {
 	 */
 	@Configurable
 	private ListableObjectStore<Serializable> objectStore;
-	
+
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	// @Configurable
@@ -53,6 +53,15 @@ public class FifoQueueConnector {
 	private static final String STATUS = "status";
 	private static final String STATUS_KEY = "%s" + SEPARATOR + STATUS;
 
+	/**
+	 * Find the QueuePointer within the pointers hash map. If not found, create one.
+	 * 
+	 * @param queue
+	 *            The name of the queue
+	 * @return The queue pointer
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 */
 	protected QueuePointer getPointer(String queue) throws ObjectStoreException {
 
 		QueuePointer pointer = pointers.get(queue);
@@ -103,14 +112,14 @@ public class FifoQueueConnector {
 					pointer.setHead(sequenceNumber);
 				}
 
-				//tail contains the pointer to the next available (not current)
+				// tail contains the pointer to the next available (not current)
 				sequenceNumber++;
 				if (pointer.getTail() < sequenceNumber) {
 					pointer.setTail(sequenceNumber);
 				}
 			}
 		}
-		
+
 		logger.info("Initialisation complete, status restored");
 	}
 
@@ -128,8 +137,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Put
-	 * 
 	 * Put a new message on the queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
@@ -168,8 +175,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Peak
-	 * 
 	 * Peak the head of the queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak}
@@ -188,8 +193,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * peakAll
-	 * 
 	 * Peak a message from all queues with status OK
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all}
@@ -235,8 +238,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take
-	 * 
 	 * Take (remove) a message from the head of the queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take}
@@ -255,8 +256,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * takeAll
-	 * 
 	 * Take (remove) a message from all queues with status OK
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all}
@@ -302,8 +301,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * drain
-	 * 
 	 * Take all items in a queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain}
@@ -321,8 +318,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * 
-	 * drainAll
 	 * 
 	 * Take all items in all queues
 	 * 
@@ -360,8 +355,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Size
-	 * 
 	 * Get the size of the queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:size}
@@ -379,8 +372,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Status
-	 * 
 	 * Retrieve the current status of the queue
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:status}
@@ -398,8 +389,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * markError
-	 * 
 	 * Set the queue status to error. This will stop the queue from returning any messages
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:mark-error}
@@ -415,8 +404,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * resolveError
-	 * 
 	 * This will mark the queue error free, hence it will start returning messages
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:resolve-error}
@@ -447,7 +434,6 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * 
 	 * Set the queue status
 	 * 
 	 * @param pointer
@@ -470,6 +456,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
+	 * Given a queue and a position, create the key to be used within the object store to store the item
 	 * 
 	 * @param queue
 	 *            The queue name
