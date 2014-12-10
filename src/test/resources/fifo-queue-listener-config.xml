@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:fifo-queue="http://www.mulesoft.org/schema/mule/fifo-queue"
+      xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+      xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/fifo-queue http://www.mulesoft.org/schema/mule/fifo-queue/1.0/mule-fifo-queue.xsd
+        http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+    <fifo-queue:config name="fifoQueueConnector" objectStore-ref="_defaultUserObjectStore" />
+
+    <flow name="putFlow">
+        <fifo-queue:put queue="queue1"/>
+        <fifo-queue:put queue="queue2"/>
+        <fifo-queue:put queue="queue3"/>
+        <fifo-queue:put queue="queue4"/>
+    </flow>
+    
+	<flow name="peakListenerFlow">
+        <fifo-queue:peak-listener queue="queue1"/>
+        <vm:outbound-endpoint path="testcase.peak" />
+    </flow>    
+    
+    <flow name="takeListenerFlow">
+        <fifo-queue:peak-listener queue="queue2"/>
+        <vm:outbound-endpoint path="testcase.take" />
+    </flow> 
+    
+    <flow name="peakAllListenerFlow" initialState="stopped">
+        <fifo-queue:peak-all-listener />
+        <vm:outbound-endpoint path="testcase.peakAll" />
+    </flow> 
+    
+    <flow name="takeAllListenerFlow" initialState="stopped">
+        <fifo-queue:take-all-listener />
+        <vm:outbound-endpoint path="testcase.takeAll" />
+    </flow> 
+    
+</mule>
