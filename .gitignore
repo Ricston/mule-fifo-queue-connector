@@ -6,3 +6,4 @@ target
 flows
 *.class
 .mule
+.DS_Store
