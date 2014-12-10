@@ -10,13 +10,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
+import org.mule.api.annotations.Source;
 import org.mule.api.annotations.lifecycle.Start;
 import org.mule.api.annotations.lifecycle.Stop;
 import org.mule.api.annotations.param.Payload;
+import org.mule.api.callback.SourceCallback;
+import org.mule.api.lifecycle.InitialisationException;
+import org.mule.api.lifecycle.LifecycleException;
 import org.mule.api.store.ListableObjectStore;
 import org.mule.api.store.ObjectStoreException;
 import org.slf4j.Logger;
@@ -37,16 +42,27 @@ public class FifoQueueConnector {
 	@Configurable
 	private ListableObjectStore<Serializable> objectStore;
 
+	/**
+	 * Logger
+	 */
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	// @Configurable
 	// @Default(value="false")
-	// private Boolean keepOnlyLastMessageOnError;
+	// private Boolean keepOnlyLastMessageOnError = false;
 
 	/**
 	 * A map used to store the queues' head and tail pointers, keyed by queue name
 	 */
 	private Map<String, QueuePointer> pointers = new HashMap<String, QueuePointer>();
+
+	/**
+	 * Map for inbound callbacks
+	 */
+	private Map<String, SourceCallback> peakCallbacks = new HashMap<String, SourceCallback>();
+	private Map<String, SourceCallback> takeCallbacks = new HashMap<String, SourceCallback>();
+	private SourceCallback peakAllCallback = null;
+	private SourceCallback takeAllCallback = null;
 
 	private static final String SEPARATOR = ":::";
 	private static final String KEY = "%s" + SEPARATOR + "%d";
@@ -145,15 +161,27 @@ public class FifoQueueConnector {
 	 *            The queue name
 	 * @param content
 	 *            Content to be processed
-	 * @throws ObjectStoreException
-	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any error the object store or source callback might throw
 	 */
 	@Processor
-	public void put(String queue, @Payload Serializable content) throws ObjectStoreException {
+	public void put(String queue, @Payload Serializable content) throws Exception {
 
 		QueuePointer pointer = getPointer(queue);
 		objectStore.store(formatQueueKey(queue, pointer.getTail()), content);
 		pointer.nextTail();
+
+		// check for callbacks
+		SourceCallback callback = null;
+		if ((callback = takeCallbacks.get(queue)) != null) {
+			callback.process(take(pointer));
+		} else if ((callback = peakCallbacks.get(queue)) != null) {
+			callback.process(peak(pointer));
+		} else if (takeAllCallback != null) {
+			takeAllCallback.process(take(pointer));
+		} else if (peakAllCallback != null) {
+			peakAllCallback.process(peak(pointer));
+		}
 	}
 
 	/**
@@ -416,6 +444,90 @@ public class FifoQueueConnector {
 	@Processor
 	public void resolveError(String queue) throws ObjectStoreException {
 		queueStatus(queue, true);
+	}
+
+	/**
+	 * Checks if there is a listener already registered for the queue
+	 * 
+	 * @param queue
+	 *            The queue name
+	 * @throws OnlyOneListenerPermittedException
+	 *             Thrown if a listener for the same queue is already registered
+	 */
+	protected void validateSingleListener(String queue) throws OnlyOneListenerPermittedException {
+		if (peakCallbacks.containsKey(queue) || takeCallbacks.containsKey(queue)) {
+			throw new OnlyOneListenerPermittedException(queue);
+		}
+	}
+
+	/**
+	 * Register callback for the queue. Once a message is received on the queue, peak will automatically be called and the item is passed to the callback. N.B.
+	 * If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peak-listener will be invoked twice with
+	 * the same (first) message. Reason: peak does not take the message off the queue. A use case of this would be when connector is configured with a single
+	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue.
+	 * 
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-listener}
+	 * 
+	 * @param callback
+	 *            The flow to be invoked
+	 * @param queue
+	 *            The queue name
+	 * @throws OnlyOneListenerPermittedException
+	 *             Thrown if a listener for the same queue is already registered
+	 */
+	@Source
+	public void peakListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException {
+		validateSingleListener(queue);
+		peakCallbacks.put(queue, callback);
+	}
+
+	/**
+	 * Register callback for the queue. Once a message is received on the queue, take will automatically be called and the item is passed to the callback
+	 * 
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-listener}
+	 * 
+	 * @param callback
+	 *            The flow to be invoked
+	 * @param queue
+	 *            The queue name
+	 * @throws OnlyOneListenerPermittedException
+	 *             Thrown if a listener for the same queue is already registered
+	 */
+	@Source
+	public void takeListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException {
+		validateSingleListener(queue);
+		takeCallbacks.put(queue, callback);
+	}
+
+	/**
+	 * Register callback for all queues. Once a message is received on any queue (except the ones that have their own listeners), peak will automatically be
+	 * called and the item is passed to the callback. N.B. If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue,
+	 * fifo-queue:peak-listener will be invoked twice with the same (first) message. Reason: peak does not take the message off the queue. A use case of this
+	 * would be when connector is configured with a single receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the
+	 * queue.
+	 * 
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all-listener}
+	 * 
+	 * @param callback
+	 *            The flow to be invoked
+	 */
+	@Source
+	public void peakAllListener(SourceCallback callback) {
+		peakAllCallback = callback;
+	}
+
+	/**
+	 * Register callback for all queues. Once a message is received on any queue (except the ones that have their own listeners), take will automatically be
+	 * called and the item is passed to the callback
+	 * 
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all-listener}
+	 * 
+	 * @param callback
+	 *            The flow to be invoked
+	 */
+	@Source
+	public void takeAllListener(SourceCallback callback) {
+		takeAllCallback = callback;
 	}
 
 	/**

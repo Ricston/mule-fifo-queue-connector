@@ -41,3 +41,19 @@
 <!-- BEGIN_INCLUDE(fifo-queue:drain-all) -->
     <fifo-queue:drain-all />
 <!-- END_INCLUDE(fifo-queue:drain-all) -->
+
+<!-- BEGIN_INCLUDE(fifo-queue:peak-listener) -->
+    <fifo-queue:peak-listener queue="queue1" />
+<!-- END_INCLUDE(fifo-queue:peak-listener) -->
+
+<!-- BEGIN_INCLUDE(fifo-queue:take-listener) -->
+    <fifo-queue:take-listener queue="queue1" />
+<!-- END_INCLUDE(fifo-queue:take-listener) -->
+
+<!-- BEGIN_INCLUDE(fifo-queue:peak-all-listener) -->
+    <fifo-queue:peak-all-listener />
+<!-- END_INCLUDE(fifo-queue:peak-all-listener) -->
+
+<!-- BEGIN_INCLUDE(fifo-queue:take-all-listener) -->
+    <fifo-queue:take-all-listener />
+<!-- END_INCLUDE(fifo-queue:take-all-listener) -->
