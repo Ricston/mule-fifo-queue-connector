@@ -19,7 +19,7 @@ import org.mule.modules.fifoqueue.FifoQueueConnector;
 import org.mule.modules.tests.ConnectorTestCase;
 import org.mule.transport.NullPayload;
 
-public class FifoPersistentQueueConnectorTest extends ConnectorTestCase {
+public class FifoQueueConnectorTest extends ConnectorTestCase {
 	
 	//some functions will be repeated
 	private long loop = 5;
