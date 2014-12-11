@@ -11,11 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.mule.api.annotations.Configurable;
 import org.mule.api.annotations.Connector;
 import org.mule.api.annotations.Processor;
 import org.mule.api.annotations.Source;
-import org.mule.api.annotations.lifecycle.Start;
 import org.mule.api.annotations.lifecycle.Stop;
 import org.mule.api.annotations.param.Payload;
 import org.mule.api.callback.SourceCallback;
@@ -96,7 +97,7 @@ public class FifoQueueConnector {
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
 	 */
-	@Start
+	@PostConstruct
 	public void initialiseConnector() throws ObjectStoreException {
 
 		objectStore.open();
