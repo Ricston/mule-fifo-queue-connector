@@ -94,7 +94,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Initialise the connector by opening the object store and loading the old messages
+	 * Initialise the connector by opening the object store and loading the old messages.
 	 * 
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
@@ -141,7 +141,7 @@ public class FifoQueueConnector {
 
 	/**
 	 * 
-	 * Dispose the connector by closing the object store
+	 * Dispose the connector by closing the object store.
 	 * 
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
@@ -155,7 +155,8 @@ public class FifoQueueConnector {
 	/**
 	 * Put a new message on the queue. This will automatically trigger callbacks.
 	 * 
-	 * Callback priority: take on specific queue, followed by peak on specific queue, followed by take-all, followed by peak-all.
+	 * Callback priority: fifo-queue:take-listener on specific queue, followed by fifo-queue:take-all-listener, followed by fifo-queue:peak-listener on specific
+	 * queue, followed by fifo-queue:peak-all-listener.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
@@ -175,19 +176,24 @@ public class FifoQueueConnector {
 
 		// check for callbacks
 		SourceCallback callback = null;
+
+		// If we have a take callback, take/remove the element off the queue before calling the callback.
 		if ((callback = takeCallbacks.get(queue)) != null) {
 			callback.process(take(pointer));
-		} else if ((callback = peakCallbacks.get(queue)) != null) {
-			callback.process(peak(pointer));
 		} else if (takeAllCallback != null) {
 			takeAllCallback.process(take(pointer));
+		}
+		// If we have a peak callback, use the content passed as parameter rather then peak(pointer). We cannot use peak(pointer) because if more than one
+		// element is on the queue, peak will always return the first element.
+		else if ((callback = peakCallbacks.get(queue)) != null) {
+			callback.process(content);
 		} else if (peakAllCallback != null) {
-			peakAllCallback.process(peak(pointer));
+			peakAllCallback.process(content);
 		}
 	}
 
 	/**
-	 * Peak the head of the queue
+	 * Peak the head of the queue.
 	 * 
 	 * @param pointer
 	 *            The queue
@@ -205,7 +211,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Peak the head of the queue
+	 * Peak the head of the queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak}
 	 * 
@@ -223,7 +229,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Peak a message from all queues with status OK
+	 * Peak a message from all queues with status OK.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all}
 	 * 
@@ -248,7 +254,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take (remove) a message from the head of the queue
+	 * Take (remove) a message from the head of the queue.
 	 * 
 	 * @param pointer
 	 *            The queue
@@ -268,7 +274,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take (remove) a message from the head of the queue
+	 * Take (remove) a message from the head of the queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take}
 	 * 
@@ -311,7 +317,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take all items in a queue
+	 * Take all items in a queue.
 	 * 
 	 * @param pointer
 	 *            The queue pointer
@@ -331,7 +337,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take all items in a queue
+	 * Take all items in a queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain}
 	 * 
@@ -349,7 +355,7 @@ public class FifoQueueConnector {
 
 	/**
 	 * 
-	 * Take all items in all queues
+	 * Take all items in all queues.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain-all}
 	 * 
@@ -372,7 +378,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Get the size of the queue
+	 * Get the size of the queue.
 	 * 
 	 * @param pointer
 	 *            The queue pointer
@@ -385,7 +391,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Get the size of the queue
+	 * Get the size of the queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:size}
 	 * 
@@ -402,7 +408,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Retrieve the current status of the queue
+	 * Retrieve the current status of the queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:status}
 	 * 
@@ -419,7 +425,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Set the queue status to error. This will stop the queue from returning any messages
+	 * Set the queue status to error. This will stop the queue from returning any messages.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:mark-error}
 	 * 
@@ -434,7 +440,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * This will mark the queue error free, hence it will start returning messages
+	 * This will mark the queue error free, hence it will start returning messages.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:resolve-error}
 	 * 
@@ -449,7 +455,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Checks if there is a listener already registered for the queue
+	 * Checks if there is a listener already registered for the queue.
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -463,10 +469,11 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Register callback for the queue. Once a message is received on the queue, peak will automatically be called and the item is passed to the callback. N.B.
-	 * If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peak-listener will be invoked twice with
-	 * the same (first) message. Reason: peak does not take the message off the queue. A use case of this would be when connector is configured with a single
-	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue.
+	 * Register callback for the queue (inbound endpoint). Once a message is received on the queue, peak will automatically be called and the item is passed to
+	 * the callback. N.B. If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peak-listener will be
+	 * invoked twice with the correct message, however keep in mind that the messages will remain on the queue. Use case: connector is configured with a single
+	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue. Useful to keep the message on the queue
+	 * until all processing is complete.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-listener}
 	 * 
@@ -484,7 +491,8 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Register callback for the queue. Once a message is received on the queue, take will automatically be called and the item is passed to the callback
+	 * Register callback for the queue (inbound endpoint). Once a message is received on the queue, take will automatically be called and the item is passed to
+	 * the callback.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-listener}
 	 * 
@@ -502,7 +510,7 @@ public class FifoQueueConnector {
 		validateSingleListener(queue);
 		takeCallbacks.put(queue, callback);
 
-		// read messages that are already on the queue
+		// read messages that are already on the queue (on start up)
 		QueuePointer pointer = getPointer(queue);
 
 		Serializable item = null;
@@ -530,7 +538,7 @@ public class FifoQueueConnector {
 
 	/**
 	 * Register callback for all queues. Once a message is received on any queue (except the ones that have their own listeners), take will automatically be
-	 * called and the item is passed to the callback
+	 * called and the item is passed to the callback.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all-listener}
 	 * 
@@ -543,7 +551,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Set the queue status
+	 * Set the queue status.
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -558,7 +566,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Set the queue status
+	 * Set the queue status.
 	 * 
 	 * @param pointer
 	 *            The queue pointer
@@ -580,7 +588,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Given a queue and a position, create the key to be used within the object store to store the item
+	 * Given a queue and a position, create the key to be used within the object store to store the item.
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -593,7 +601,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Get the object store
+	 * Get the object store.
 	 * 
 	 * @return The object store
 	 */
@@ -602,7 +610,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Set the object store
+	 * Set the object store.
 	 * 
 	 * @param objectStore
 	 *            The object store
