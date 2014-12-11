@@ -2,9 +2,9 @@
     <fifo-queue:put queue="queue1" />
 <!-- END_INCLUDE(fifo-queue:put) -->
 
-<!-- BEGIN_INCLUDE(fifo-queue:peak) -->
-    <fifo-queue:peak queue="queue1" />
-<!-- END_INCLUDE(fifo-queue:peak) -->
+<!-- BEGIN_INCLUDE(fifo-queue:peek) -->
+    <fifo-queue:peek queue="queue1" />
+<!-- END_INCLUDE(fifo-queue:peek) -->
 
 <!-- BEGIN_INCLUDE(fifo-queue:take) -->
     <fifo-queue:take queue="queue1" />
@@ -26,9 +26,9 @@
     <fifo-queue:resolve-error queue="queue1" />
 <!-- END_INCLUDE(fifo-queue:resolve-error) -->
 
-<!-- BEGIN_INCLUDE(fifo-queue:peak-all) -->
-    <fifo-queue:peak-all />
-<!-- END_INCLUDE(fifo-queue:peak-all) -->
+<!-- BEGIN_INCLUDE(fifo-queue:peek-all) -->
+    <fifo-queue:peek-all />
+<!-- END_INCLUDE(fifo-queue:peek-all) -->
 
 <!-- BEGIN_INCLUDE(fifo-queue:take-all) -->
     <fifo-queue:take-all />
@@ -42,17 +42,17 @@
     <fifo-queue:drain-all />
 <!-- END_INCLUDE(fifo-queue:drain-all) -->
 
-<!-- BEGIN_INCLUDE(fifo-queue:peak-listener) -->
-    <fifo-queue:peak-listener queue="queue1" />
-<!-- END_INCLUDE(fifo-queue:peak-listener) -->
+<!-- BEGIN_INCLUDE(fifo-queue:peek-listener) -->
+    <fifo-queue:peek-listener queue="queue1" />
+<!-- END_INCLUDE(fifo-queue:peek-listener) -->
 
 <!-- BEGIN_INCLUDE(fifo-queue:take-listener) -->
     <fifo-queue:take-listener queue="queue1" />
 <!-- END_INCLUDE(fifo-queue:take-listener) -->
 
-<!-- BEGIN_INCLUDE(fifo-queue:peak-all-listener) -->
-    <fifo-queue:peak-all-listener />
-<!-- END_INCLUDE(fifo-queue:peak-all-listener) -->
+<!-- BEGIN_INCLUDE(fifo-queue:peek-all-listener) -->
+    <fifo-queue:peek-all-listener />
+<!-- END_INCLUDE(fifo-queue:peek-all-listener) -->
 
 <!-- BEGIN_INCLUDE(fifo-queue:take-all-listener) -->
     <fifo-queue:take-all-listener />

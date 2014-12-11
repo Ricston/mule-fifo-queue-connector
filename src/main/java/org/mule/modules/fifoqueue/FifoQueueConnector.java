@@ -59,9 +59,9 @@ public class FifoQueueConnector {
 	/**
 	 * Map for inbound callbacks
 	 */
-	private Map<String, SourceCallback> peakCallbacks = new HashMap<String, SourceCallback>();
+	private Map<String, SourceCallback> peekCallbacks = new HashMap<String, SourceCallback>();
 	private Map<String, SourceCallback> takeCallbacks = new HashMap<String, SourceCallback>();
-	private SourceCallback peakAllCallback = null;
+	private SourceCallback peekAllCallback = null;
 	private SourceCallback takeAllCallback = null;
 
 	private static final String SEPARATOR = ":::";
@@ -155,8 +155,8 @@ public class FifoQueueConnector {
 	/**
 	 * Put a new message on the queue. This will automatically trigger callbacks.
 	 * 
-	 * Callback priority: fifo-queue:take-listener on specific queue, followed by fifo-queue:take-all-listener, followed by fifo-queue:peak-listener on specific
-	 * queue, followed by fifo-queue:peak-all-listener.
+	 * Callback priority: fifo-queue:take-listener on specific queue, followed by fifo-queue:take-all-listener, followed by fifo-queue:peek-listener on specific
+	 * queue, followed by fifo-queue:peek-all-listener.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
@@ -164,8 +164,10 @@ public class FifoQueueConnector {
 	 *            The queue name
 	 * @param content
 	 *            Content to be processed
-	 * @throws ObjectStoreException Any error the object store might throw
-	 * @throws Exception Any exception the source callback might throw
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any exception the source callback might throw
 	 */
 	@Processor
 	public void put(String queue, @Payload Serializable content) throws ObjectStoreException, Exception {
@@ -183,17 +185,17 @@ public class FifoQueueConnector {
 		} else if (takeAllCallback != null) {
 			takeAllCallback.process(take(pointer));
 		}
-		// If we have a peak callback, use the content passed as parameter rather then peak(pointer). We cannot use peak(pointer) because if more than one
-		// element is on the queue, peak will always return the first element.
-		else if ((callback = peakCallbacks.get(queue)) != null) {
+		// If we have a peek callback, use the content passed as parameter rather then peek(pointer). We cannot use peek(pointer) because if more than one
+		// element is on the queue, peek will always return the first element.
+		else if ((callback = peekCallbacks.get(queue)) != null) {
 			callback.process(content);
-		} else if (peakAllCallback != null) {
-			peakAllCallback.process(content);
+		} else if (peekAllCallback != null) {
+			peekAllCallback.process(content);
 		}
 	}
 
 	/**
-	 * Peak the head of the queue.
+	 * Peek the head of the queue.
 	 * 
 	 * @param pointer
 	 *            The queue
@@ -201,7 +203,7 @@ public class FifoQueueConnector {
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
 	 */
-	protected Serializable peak(QueuePointer pointer) throws ObjectStoreException {
+	protected Serializable peek(QueuePointer pointer) throws ObjectStoreException {
 
 		if (pointer.isStatus() && size(pointer) > 0) {
 			return objectStore.retrieve(formatQueueKey(pointer.getName(), pointer.getHead()));
@@ -211,9 +213,9 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Peak the head of the queue.
+	 * Peek the head of the queue.
 	 * 
-	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek}
 	 * 
 	 * @param queue
 	 *            The queue name
@@ -222,29 +224,29 @@ public class FifoQueueConnector {
 	 *             Any error the object store might throw
 	 */
 	@Processor
-	public Serializable peak(String queue) throws ObjectStoreException {
+	public Serializable peek(String queue) throws ObjectStoreException {
 
 		QueuePointer pointer = getPointer(queue);
-		return peak(pointer);
+		return peek(pointer);
 	}
 
 	/**
-	 * Peak a message from all queues with status OK.
+	 * Peek a message from all queues with status OK.
 	 * 
-	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-all}
 	 * 
 	 * @return A list of messages, i.e. the head of every queue (with status OK)
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
 	 */
 	@Processor
-	public List<Serializable> peakAll() throws ObjectStoreException {
+	public List<Serializable> peekAll() throws ObjectStoreException {
 
 		List<Serializable> items = new ArrayList<Serializable>();
 
 		for (Map.Entry<String, QueuePointer> pointer : pointers.entrySet()) {
 
-			Serializable item = peak(pointer.getValue());
+			Serializable item = peek(pointer.getValue());
 			if (item != null) {
 				items.add(item);
 			}
@@ -463,19 +465,19 @@ public class FifoQueueConnector {
 	 *             Thrown if a listener for the same queue is already registered
 	 */
 	protected void validateSingleListener(String queue) throws OnlyOneListenerPermittedException {
-		if (peakCallbacks.containsKey(queue) || takeCallbacks.containsKey(queue)) {
+		if (peekCallbacks.containsKey(queue) || takeCallbacks.containsKey(queue)) {
 			throw new OnlyOneListenerPermittedException(queue);
 		}
 	}
 
 	/**
-	 * Register callback for the queue (inbound endpoint). Once a message is received on the queue, peak will automatically be called and the item is passed to
-	 * the callback. N.B. If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peak-listener will be
-	 * invoked twice with the correct message, however keep in mind that the messages will remain on the queue. Use case: connector is configured with a single
-	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue. Useful to keep the message on the queue
-	 * until all processing is complete.
+	 * Register peek callback for the queue (inbound endpoint). Once a message is received on the queue, peek will automatically be called and the item is
+	 * passed to the callback. N.B. If fifo-queue:peek-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peek-listener
+	 * will be invoked twice with the correct message, however keep in mind that the messages will remain on the queue. Use case: connector is configured with a
+	 * single receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue. Useful to keep the message on the
+	 * queue until all processing is complete.
 	 * 
-	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-listener}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-listener}
 	 * 
 	 * @param callback
 	 *            The flow to be invoked
@@ -483,47 +485,50 @@ public class FifoQueueConnector {
 	 *            The queue name
 	 * @throws OnlyOneListenerPermittedException
 	 *             Thrown if a listener for the same queue is already registered
-	 * @throws ObjectStoreException Any error the object store might throw
-	 * @throws Exception Any exception the source callback might throw
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any exception the source callback might throw
 	 */
 	@Source
-	public void peakListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException, ObjectStoreException, Exception {
+	public void peekListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException, ObjectStoreException, Exception {
 		validateSingleListener(queue);
-		peakCallbacks.put(queue, callback);
-		
+		peekCallbacks.put(queue, callback);
+
 		// read messages that are already on the queue (on start up)
 		QueuePointer pointer = getPointer(queue);
 		List<Serializable> items = queueToList(pointer);
-		for (Serializable item: items){
+		for (Serializable item : items) {
 			callback.process(item);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Read all elements in a queue and return them as a list.
 	 * 
-	 * @param pointer The queue Pointer
+	 * @param pointer
+	 *            The queue Pointer
 	 * @return A list containing all elements in the queue
-	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
 	 */
-	protected List<Serializable> queueToList(QueuePointer pointer) throws ObjectStoreException{
+	protected List<Serializable> queueToList(QueuePointer pointer) throws ObjectStoreException {
 		List<Serializable> items = new ArrayList<Serializable>();
-		
+
 		if (pointer.isStatus() && size(pointer) > 0) {
-			
-			for(long position = pointer.getHead(); position < pointer.getTail(); position++)
-			{
+
+			for (long position = pointer.getHead(); position < pointer.getTail(); position++) {
 				items.add(objectStore.retrieve(formatQueueKey(pointer.getName(), position)));
 			}
 		}
-		
+
 		return items;
 	}
 
 	/**
-	 * Register callback for the queue (inbound endpoint). Once a message is received on the queue, take will automatically be called and the item is passed to
-	 * the callback.
+	 * Register take callback for the queue (inbound endpoint). Once a message is received on the queue, take will automatically be called and the item is
+	 * passed to the callback.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-listener}
 	 * 
@@ -531,9 +536,12 @@ public class FifoQueueConnector {
 	 *            The flow to be invoked
 	 * @param queue
 	 *            The queue name
-	 * @throws OnlyOneListenerPermittedException Thrown if a listener for the same queue is already registered. 
-	 * @throws ObjectStoreException Any error the object store might throw
-	 * @throws Exception Any exception the source callback might throw
+	 * @throws OnlyOneListenerPermittedException
+	 *             Thrown if a listener for the same queue is already registered.
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any exception the source callback might throw
 	 */
 	@Source
 	public void takeListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException, ObjectStoreException, Exception {
@@ -550,32 +558,34 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Register callback for all queues. Once a message is received on any queue (except the ones that have their own listeners), peak will automatically be
-	 * called and the item is passed to the callback. N.B. If fifo-queue:peak-listener is configured on a queue and 2 messages are received on the same queue,
-	 * fifo-queue:peak-listener will be invoked twice with the same (first) message. Reason: peak does not take the message off the queue. A use case of this
-	 * would be when connector is configured with a single receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the
-	 * queue.
+	 * Register peek callback for all queues (inbound endpoint). Once a message is received on any queue (except the ones that have their own listeners), peek
+	 * will automatically be called and the item is passed to the callback. N.B. If fifo-queue:peek-listener is configured on a queue and 2 messages are
+	 * received on the same queue, fifo-queue:peek-listener will be invoked twice with the same (first) message. Reason: peek does not take the message off the
+	 * queue. A use case of this would be when connector is configured with a single receiver thread and at the end of the flow, fifo-queue:take is invoked to
+	 * remove the message from the queue.
 	 * 
-	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peak-all-listener}
+	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-all-listener}
 	 * 
 	 * @param callback
 	 *            The flow to be invoked
-	 * @throws ObjectStoreException Any error the object store might throw
-	 * @throws Exception Any exception the source callback might throw
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any exception the source callback might throw
 	 */
 	@Source
-	public void peakAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
-		peakAllCallback = callback;
-		
+	public void peekAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
+		peekAllCallback = callback;
+
 		// read messages that are already on the queue (on start up)
 		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
 
 			QueuePointer pointer = pointerMapEntry.getValue();
-			
-			//skip operation if queue has its own listener
-			if (!takeCallbacks.containsKey(pointer.getName()) || !peakCallbacks.containsKey(pointer.getName())){
+
+			// skip operation if queue has its own listener
+			if (!takeCallbacks.containsKey(pointer.getName()) || !peekCallbacks.containsKey(pointer.getName())) {
 				List<Serializable> items = queueToList(pointer);
-				for (Serializable item: items){
+				for (Serializable item : items) {
 					callback.process(item);
 				}
 			}
@@ -583,34 +593,36 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Register callback for all queues. Once a message is received on any queue (except the ones that have their own listeners), take will automatically be
-	 * called and the item is passed to the callback.
+	 * Register take callback for all queues (inbound endpoint). Once a message is received on any queue (except the ones that have their own listeners), take
+	 * will automatically be called and the item is passed to the callback.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all-listener}
 	 * 
 	 * @param callback
 	 *            The flow to be invoked
-	 * @throws ObjectStoreException Any error the object store might throw
-	 * @throws Exception Any exception the source callback might throw
+	 * @throws ObjectStoreException
+	 *             Any error the object store might throw
+	 * @throws Exception
+	 *             Any exception the source callback might throw
 	 */
 	@Source
 	public void takeAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
 		takeAllCallback = callback;
-		
+
 		// read messages that are already on the queue (on start up)
 		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
 
 			QueuePointer pointer = pointerMapEntry.getValue();
-			
-			//skip operation if queue has its own listener
-			if (!takeCallbacks.containsKey(pointer.getName())){
+
+			// skip operation if queue has its own listener
+			if (!takeCallbacks.containsKey(pointer.getName())) {
 				Serializable item = null;
 				while ((item = take(pointer)) != null) {
 					callback.process(item);
 				}
 			}
 		}
-		
+
 	}
 
 	/**

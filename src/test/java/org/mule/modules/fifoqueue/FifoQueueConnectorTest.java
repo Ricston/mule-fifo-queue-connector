@@ -24,7 +24,7 @@ public class FifoQueueConnectorTest extends ConnectorTestCase {
 	//some functions will be repeated
 	private long loop = 5;
 	
-	//number of queues in test config (to be used by takeAll and peakAll)
+	//number of queues in test config (to be used by takeAll and peekAll)
 	private int numberOfQueues = 5;
 	private String payload = "Another string ";
     
@@ -64,9 +64,9 @@ public class FifoQueueConnectorTest extends ConnectorTestCase {
     	
     	logger.info("Peeking messages");
     	
-    	//peak the queue
+    	//peek the queue
     	for (int i=0; i<loop; i++){
-    		result = runFlow("peakFlow");
+    		result = runFlow("peekFlow");
     		Assert.assertEquals(payload + "0", result.getMessage().getPayload());
     	}
     	
@@ -138,12 +138,12 @@ public class FifoQueueConnectorTest extends ConnectorTestCase {
     }
     
     @Test
-    public void testPeakAll() throws Exception{
+    public void testPeekAll() throws Exception{
     	MuleEvent result;
     	
-    	//peak elements from the queue
+    	//peek elements from the queue
     	for (int i=0; i<loop; i++){
-	    	result = runFlow("peakAllFlow");
+	    	result = runFlow("peekAllFlow");
 	    	Assert.assertTrue(result.getMessage().getPayload() instanceof List);
 	    	@SuppressWarnings("unchecked")
 			List<Serializable> items = (List<Serializable>) result.getMessage().getPayload();

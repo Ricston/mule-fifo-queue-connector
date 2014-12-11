@@ -23,8 +23,8 @@
         <fifo-queue:size queue="queue1"/>
     </flow>
     
-    <flow name="peakFlow">
-        <fifo-queue:peak queue="queue1"/>
+    <flow name="peekFlow">
+        <fifo-queue:peek queue="queue1"/>
     </flow>
     
     <flow name="takeFlow">
@@ -43,8 +43,8 @@
         <fifo-queue:status queue="queue1"/>
     </flow>
     
-    <flow name="peakAllFlow">
-        <fifo-queue:peak-all/>
+    <flow name="peekAllFlow">
+        <fifo-queue:peek-all/>
     </flow>
     
     <flow name="takeAllFlow">

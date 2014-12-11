@@ -20,19 +20,19 @@
         <fifo-queue:put queue="queue4"/>
     </flow>
     
-	<flow name="peakListenerFlow">
-        <fifo-queue:peak-listener queue="queue1"/>
-        <vm:outbound-endpoint path="testcase.peak" />
+	<flow name="peekListenerFlow">
+        <fifo-queue:peek-listener queue="queue1"/>
+        <vm:outbound-endpoint path="testcase.peek" />
     </flow>    
     
     <flow name="takeListenerFlow">
-        <fifo-queue:peak-listener queue="queue2"/>
+        <fifo-queue:peek-listener queue="queue2"/>
         <vm:outbound-endpoint path="testcase.take" />
     </flow> 
     
-    <flow name="peakAllListenerFlow" initialState="stopped">
-        <fifo-queue:peak-all-listener />
-        <vm:outbound-endpoint path="testcase.peakAll" />
+    <flow name="peekAllListenerFlow" initialState="stopped">
+        <fifo-queue:peek-all-listener />
+        <vm:outbound-endpoint path="testcase.peekAll" />
     </flow> 
     
     <flow name="takeAllListenerFlow" initialState="stopped">
