@@ -153,7 +153,9 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Put a new message on the queue
+	 * Put a new message on the queue. This will automatically trigger callbacks.
+	 * 
+	 * Callback priority: take on specific queue, followed by peak on specific queue, followed by take-all, followed by peak-all.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
@@ -490,13 +492,23 @@ public class FifoQueueConnector {
 	 *            The flow to be invoked
 	 * @param queue
 	 *            The queue name
-	 * @throws OnlyOneListenerPermittedException
-	 *             Thrown if a listener for the same queue is already registered
+	 * @throws Exception
+	 *             OnlyOneListenerPermittedException Thrown if a listener for the same queue is already registered. ObjectStoreException Any error the object
+	 *             store might throw.
+	 * 
 	 */
 	@Source
-	public void takeListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException {
+	public void takeListener(SourceCallback callback, String queue) throws Exception {
 		validateSingleListener(queue);
 		takeCallbacks.put(queue, callback);
+
+		// read messages that are already on the queue
+		QueuePointer pointer = getPointer(queue);
+
+		Serializable item = null;
+		while ((item = take(pointer)) != null) {
+			callback.process(item);
+		}
 	}
 
 	/**
