@@ -164,11 +164,11 @@ public class FifoQueueConnector {
 	 *            The queue name
 	 * @param content
 	 *            Content to be processed
-	 * @throws Exception
-	 *             Any error the object store or source callback might throw
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any exception the source callback might throw
 	 */
 	@Processor
-	public void put(String queue, @Payload Serializable content) throws Exception {
+	public void put(String queue, @Payload Serializable content) throws ObjectStoreException, Exception {
 
 		QueuePointer pointer = getPointer(queue);
 		objectStore.store(formatQueueKey(queue, pointer.getTail()), content);
@@ -483,11 +483,42 @@ public class FifoQueueConnector {
 	 *            The queue name
 	 * @throws OnlyOneListenerPermittedException
 	 *             Thrown if a listener for the same queue is already registered
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any exception the source callback might throw
 	 */
 	@Source
-	public void peakListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException {
+	public void peakListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException, ObjectStoreException, Exception {
 		validateSingleListener(queue);
 		peakCallbacks.put(queue, callback);
+		
+		// read messages that are already on the queue (on start up)
+		QueuePointer pointer = getPointer(queue);
+		List<Serializable> items = queueToList(pointer);
+		for (Serializable item: items){
+			callback.process(item);
+		}
+		
+	}
+	
+	/**
+	 * Read all elements in a queue and return them as a list.
+	 * 
+	 * @param pointer The queue Pointer
+	 * @return A list containing all elements in the queue
+	 * @throws ObjectStoreException Any error the object store might throw
+	 */
+	protected List<Serializable> queueToList(QueuePointer pointer) throws ObjectStoreException{
+		List<Serializable> items = new ArrayList<Serializable>();
+		
+		if (pointer.isStatus() && size(pointer) > 0) {
+			
+			for(long position = pointer.getHead(); position < pointer.getTail(); position++)
+			{
+				items.add(objectStore.retrieve(formatQueueKey(pointer.getName(), position)));
+			}
+		}
+		
+		return items;
 	}
 
 	/**
@@ -500,13 +531,12 @@ public class FifoQueueConnector {
 	 *            The flow to be invoked
 	 * @param queue
 	 *            The queue name
-	 * @throws Exception
-	 *             OnlyOneListenerPermittedException Thrown if a listener for the same queue is already registered. ObjectStoreException Any error the object
-	 *             store might throw.
-	 * 
+	 * @throws OnlyOneListenerPermittedException Thrown if a listener for the same queue is already registered. 
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any exception the source callback might throw
 	 */
 	@Source
-	public void takeListener(SourceCallback callback, String queue) throws Exception {
+	public void takeListener(SourceCallback callback, String queue) throws OnlyOneListenerPermittedException, ObjectStoreException, Exception {
 		validateSingleListener(queue);
 		takeCallbacks.put(queue, callback);
 
@@ -530,10 +560,26 @@ public class FifoQueueConnector {
 	 * 
 	 * @param callback
 	 *            The flow to be invoked
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any exception the source callback might throw
 	 */
 	@Source
-	public void peakAllListener(SourceCallback callback) {
+	public void peakAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
 		peakAllCallback = callback;
+		
+		// read messages that are already on the queue (on start up)
+		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
+
+			QueuePointer pointer = pointerMapEntry.getValue();
+			
+			//skip operation if queue has its own listener
+			if (!takeCallbacks.containsKey(pointer.getName()) || !peakCallbacks.containsKey(pointer.getName())){
+				List<Serializable> items = queueToList(pointer);
+				for (Serializable item: items){
+					callback.process(item);
+				}
+			}
+		}
 	}
 
 	/**
@@ -544,10 +590,27 @@ public class FifoQueueConnector {
 	 * 
 	 * @param callback
 	 *            The flow to be invoked
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any exception the source callback might throw
 	 */
 	@Source
-	public void takeAllListener(SourceCallback callback) {
+	public void takeAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
 		takeAllCallback = callback;
+		
+		// read messages that are already on the queue (on start up)
+		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
+
+			QueuePointer pointer = pointerMapEntry.getValue();
+			
+			//skip operation if queue has its own listener
+			if (!takeCallbacks.containsKey(pointer.getName())){
+				Serializable item = null;
+				while ((item = take(pointer)) != null) {
+					callback.process(item);
+				}
+			}
+		}
+		
 	}
 
 	/**
