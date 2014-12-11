@@ -6,6 +6,8 @@
 package org.mule.modules.fifoqueue;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -144,13 +146,14 @@ public class FifoQueueConnectorTest extends ConnectorTestCase {
     	//peek elements from the queue
     	for (int i=0; i<loop; i++){
 	    	result = runFlow("peekAllFlow");
-	    	Assert.assertTrue(result.getMessage().getPayload() instanceof List);
+	    	Assert.assertTrue(result.getMessage().getPayload() instanceof Map);
 	    	@SuppressWarnings("unchecked")
-			List<Serializable> items = (List<Serializable>) result.getMessage().getPayload();
+	    	Map<String, Serializable> items = (Map<String, Serializable>) result.getMessage().getPayload();
 	    	Assert.assertEquals(numberOfQueues, items.size());
 	    	
-	    	for(int j=0; j<numberOfQueues; j++){
-	    		Assert.assertEquals(payload + 0, items.get(j));
+	    	Collection<Serializable> itemValues = items.values();
+	    	for(Iterator<Serializable> iterator = itemValues.iterator(); iterator.hasNext(); ){
+	    		Assert.assertEquals(payload + 0, iterator.next());
 	    	}
     	}
     	
@@ -166,14 +169,15 @@ public class FifoQueueConnectorTest extends ConnectorTestCase {
     	
     	//take elements from the queue
     	for (int i=0; i<loop; i++){
-	    	result= runFlow("takeAllFlow");
-	    	Assert.assertTrue(result.getMessage().getPayload() instanceof List);
+	    	result = runFlow("takeAllFlow");
+	    	Assert.assertTrue(result.getMessage().getPayload() instanceof Map);
 	    	@SuppressWarnings("unchecked")
-			List<Serializable> items = (List<Serializable>) result.getMessage().getPayload();
+	    	Map<String, Serializable> items = (Map<String, Serializable>) result.getMessage().getPayload();
 	    	Assert.assertEquals(numberOfQueues, items.size());
 	    	
-	    	for(int j=0; j<numberOfQueues; j++){
-	    		Assert.assertEquals(payload + i, items.get(j));
+	    	Collection<Serializable> itemValues = items.values();
+	    	for(Iterator<Serializable> iterator = itemValues.iterator(); iterator.hasNext(); ){
+	    		Assert.assertEquals(payload + i, iterator.next());
 	    	}
 	    	
     	}

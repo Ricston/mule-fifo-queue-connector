@@ -66,6 +66,7 @@ public class FifoQueueConnector {
 	private static final String KEY = "%s" + SEPARATOR + "%d";
 	private static final String STATUS = "status";
 	private static final String STATUS_KEY = "%s" + SEPARATOR + STATUS;
+	private static final String QUEUE_NAME_PROPERTY = "queue";
 
 	/**
 	 * Find the QueuePointer within the pointers hash map. If not found, create one.
@@ -211,7 +212,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Peek the head of the queue.
+	 * Peek the head of the queue with status OK.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek}
 	 * 
@@ -233,20 +234,20 @@ public class FifoQueueConnector {
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-all}
 	 * 
-	 * @return A list of messages, i.e. the head of every queue (with status OK)
+	 * @return A map of messages, i.e. the head of every queue (with status OK), keyed using the name of the queue
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
 	 */
 	@Processor
-	public List<Serializable> peekAll() throws ObjectStoreException {
+	public Map<String, Serializable> peekAll() throws ObjectStoreException {
 
-		List<Serializable> items = new ArrayList<Serializable>();
+		Map<String, Serializable> items = new HashMap<String, Serializable>();
 
-		for (Map.Entry<String, QueuePointer> pointer : pointers.entrySet()) {
+		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
 
-			Serializable item = peek(pointer.getValue());
+			Serializable item = peek(pointerMapEntry.getValue());
 			if (item != null) {
-				items.add(item);
+				items.put(pointerMapEntry.getKey(), item);
 			}
 		}
 
@@ -254,7 +255,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take (remove) a message from the head of the queue.
+	 * Take (remove) a message from the head of the queue with status OK.
 	 * 
 	 * @param pointer
 	 *            The queue
@@ -274,7 +275,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take (remove) a message from the head of the queue.
+	 * Take (remove) a message from the head of the queue with status OK.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take}
 	 * 
@@ -296,20 +297,20 @@ public class FifoQueueConnector {
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all}
 	 * 
-	 * @return A list of messages, i.e. the head of every queue (with status OK)
+	 * @return A map of messages, i.e. the head of every queue (with status OK), keyed using the name of the queue
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
 	 */
 	@Processor
-	public List<Serializable> takeAll() throws ObjectStoreException {
+	public Map<String, Serializable> takeAll() throws ObjectStoreException {
 
-		List<Serializable> items = new ArrayList<Serializable>();
+		Map<String, Serializable> items = new HashMap<String, Serializable>();
 
-		for (Map.Entry<String, QueuePointer> pointer : pointers.entrySet()) {
+		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
 
-			Serializable item = take(pointer.getValue());
+			Serializable item = take(pointerMapEntry.getValue());
 			if (item != null) {
-				items.add(item);
+				items.put(pointerMapEntry.getKey(), item);
 			}
 		}
 
@@ -317,7 +318,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take all items in a queue.
+	 * Take all items in a queue with status OK.
 	 * 
 	 * @param pointer
 	 *            The queue pointer
@@ -337,7 +338,7 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Take all items in a queue.
+	 * Take all items in a queue with status OK.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain}
 	 * 
@@ -355,7 +356,7 @@ public class FifoQueueConnector {
 
 	/**
 	 * 
-	 * Take all items in all queues.
+	 * Take all items in all queues with status OK.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:drain-all}
 	 * 
@@ -368,10 +369,10 @@ public class FifoQueueConnector {
 
 		Map<String, List<Serializable>> items = new HashMap<String, List<Serializable>>();
 
-		for (Map.Entry<String, QueuePointer> pointer : pointers.entrySet()) {
+		for (Map.Entry<String, QueuePointer> pointerMapEntry : pointers.entrySet()) {
 
-			List<Serializable> queueItems = drain(pointer.getValue());
-			items.put(pointer.getKey(), queueItems);
+			List<Serializable> queueItems = drain(pointerMapEntry.getValue());
+			items.put(pointerMapEntry.getKey(), queueItems);
 		}
 
 		return items;
@@ -557,10 +558,10 @@ public class FifoQueueConnector {
 
 	/**
 	 * Register peek callback for all queues (inbound endpoint). Once a message is received on any queue (except the ones that have their own listeners), peek
-	 * will automatically be called and the item is passed to the callback. N.B. If fifo-queue:peek-listener is configured on a queue and 2 messages are
-	 * received on the same queue, fifo-queue:peek-listener will be invoked twice with the same (first) message. Reason: peek does not take the message off the
-	 * queue. A use case of this would be when connector is configured with a single receiver thread and at the end of the flow, fifo-queue:take is invoked to
-	 * remove the message from the queue.
+	 * will automatically be called and the item is passed to the callback. The name of the queue will be as an inbound property called "queue". N.B. If
+	 * fifo-queue:peek-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peek-listener will be invoked twice with the
+	 * same (first) message. Reason: peek does not take the message off the queue. A use case of this would be when connector is configured with a single
+	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-all-listener}
 	 * 
@@ -580,11 +581,13 @@ public class FifoQueueConnector {
 
 			QueuePointer pointer = pointerMapEntry.getValue();
 
-			// skip operation if queue has its own listener
+			// skip operation if queue has its own take or peek listener
 			if (!takeCallbacks.containsKey(pointer.getName()) || !peekCallbacks.containsKey(pointer.getName())) {
 				List<Serializable> items = queueToList(pointer);
 				for (Serializable item : items) {
-					callback.process(item);
+					Map<String, Object> queueProperties = new HashMap<String, Object>();
+					queueProperties.put(QUEUE_NAME_PROPERTY, pointer.getName());
+					callback.process(item, queueProperties);
 				}
 			}
 		}
@@ -592,7 +595,7 @@ public class FifoQueueConnector {
 
 	/**
 	 * Register take callback for all queues (inbound endpoint). Once a message is received on any queue (except the ones that have their own listeners), take
-	 * will automatically be called and the item is passed to the callback.
+	 * will automatically be called and the item is passed to the callback. The name of the queue will be as an inbound property called "queue".
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:take-all-listener}
 	 * 
@@ -612,11 +615,13 @@ public class FifoQueueConnector {
 
 			QueuePointer pointer = pointerMapEntry.getValue();
 
-			// skip operation if queue has its own listener
+			// skip operation if queue has its own take listener
 			if (!takeCallbacks.containsKey(pointer.getName())) {
 				Serializable item = null;
 				while ((item = take(pointer)) != null) {
-					callback.process(item);
+					Map<String, Object> queueProperties = new HashMap<String, Object>();
+					queueProperties.put(QUEUE_NAME_PROPERTY, pointer.getName());
+					callback.process(item, queueProperties);
 				}
 			}
 		}
