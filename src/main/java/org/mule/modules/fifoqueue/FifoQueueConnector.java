@@ -154,7 +154,7 @@ public class FifoQueueConnector {
 	 * Put a new message on the queue. This will automatically trigger callbacks.
 	 * 
 	 * Callback priority: fifo-queue:take-listener on specific queue, followed by fifo-queue:take-all-listener, followed by fifo-queue:peek-listener on specific
-	 * queue, followed by fifo-queue:peek-all-listener.
+	 * queue, followed by fifo-queue:peek-all-listener. Only ONE callback will be called.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
