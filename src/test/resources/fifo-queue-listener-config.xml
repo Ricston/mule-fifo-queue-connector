@@ -26,7 +26,7 @@
     </flow>    
     
     <flow name="takeListenerFlow">
-        <fifo-queue:peek-listener queue="queue2"/>
+        <fifo-queue:take-listener queue="queue2"/>
         <vm:outbound-endpoint path="testcase.take" />
     </flow> 
     

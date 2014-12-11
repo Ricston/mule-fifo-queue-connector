@@ -12,34 +12,96 @@ import org.junit.Test;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.api.client.MuleClient;
+import org.mule.construct.Flow;
 import org.mule.modules.tests.ConnectorTestCase;
 
 public class FifoQueueListenerConnectorTest extends ConnectorTestCase{
 	
+	//some functions will be repeated
+	private long loop = 5;
+	
+	//number of queues in test config (to be used by takeAll and peekAll)
+	private int numberOfQueues = 4;
+	private int numberOfQueuesWithTakeListener = 1;
+	
 	private String payload = "Another string ";
 	private MuleClient client;
 	private static final int DEFAULT_TIMEOUT = 10000;
-	
-	@Before
-	public void initialise() throws Exception{
-		client = muleContext.getClient();
-		runFlow("putFlow", payload);
-	}
 	
 	@Override
     protected String getConfigResources() {
         return "fifo-queue-listener-config.xml";
     }
 	
+	@Before
+	public void initialise() throws Exception{
+		client = muleContext.getClient();
+		
+		logger.info("Inserting messages");
+    	
+    	//insert in queues
+    	for (int i=0; i<loop; i++){
+    		runFlow("putFlow", payload + i);
+    	}
+	}
+	
 	@Test
-	public void testPeakListener() throws MuleException{
-		MuleMessage result = client.request("vm://testcase.peak", DEFAULT_TIMEOUT);
-		Assert.assertEquals(payload, result.getPayload());
+	public void testPeekListener() throws MuleException{
+		MuleMessage result;
+		
+		for (int i=0; i<loop; i++){
+			result = client.request("vm://testcase.peek", DEFAULT_TIMEOUT);
+			Assert.assertEquals(payload + i, result.getPayload());
+		}
 	}
 	
 	@Test
 	public void testTakeListener() throws MuleException{
-		MuleMessage result = client.request("vm://testcase.take", DEFAULT_TIMEOUT);
-		Assert.assertEquals(payload, result.getPayload());
+		MuleMessage result;
+		
+		for (int i=0; i<loop; i++){
+			result = client.request("vm://testcase.take", DEFAULT_TIMEOUT);
+			Assert.assertEquals(payload + i, result.getPayload());
+		}
+	}
+	
+	@Test
+	public void testPeekAllListener() throws MuleException{
+		Flow flow = (Flow) muleContext.getRegistry().lookupFlowConstruct("peekAllListenerFlow");
+		flow.start();
+		
+		//should get 3 messages (3 queues), and 5 messages per queue
+		MuleMessage result;
+		
+		for (int j=0; j<(numberOfQueues - numberOfQueuesWithTakeListener); j++){
+			for (int i=0; i<loop; i++){
+				result = client.request("vm://testcase.peekAll", DEFAULT_TIMEOUT);
+				Assert.assertEquals(payload + i, result.getPayload());
+			}
+		}
+		
+		//check there are no other messages
+		result = client.request("vm://testcase.peekAll", 100);
+		Assert.assertNull(result);
+	}
+	
+	@Test
+	public void testTakeAllListener() throws MuleException{
+		Flow flow = (Flow) muleContext.getRegistry().lookupFlowConstruct("takeAllListenerFlow");
+		flow.start();
+		
+		//should get 3 messages (3 queues), and 5 messages per queue
+		MuleMessage result;
+		
+		for (int j=0; j<(numberOfQueues - numberOfQueuesWithTakeListener); j++){
+			for (int i=0; i<loop; i++){
+				result = client.request("vm://testcase.takeAll", DEFAULT_TIMEOUT);
+				Assert.assertEquals(payload + i, result.getPayload());
+			}
+		}
+		
+		//check there are no other messages
+		result = client.request("vm://testcase.takeAll", 100);
+		Assert.assertNull(result);
 	}
 }
