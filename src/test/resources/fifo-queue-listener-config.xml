@@ -30,12 +30,12 @@
         <vm:outbound-endpoint path="testcase.take" />
     </flow> 
     
-    <flow name="peekAllListenerFlow" initialState="stopped">
+    <flow name="peekAllListenerFlow" initialState="stopped" processingStrategy="synchronous">
         <fifo-queue:peek-all-listener />
         <vm:outbound-endpoint path="testcase.peekAll" />
     </flow> 
     
-    <flow name="takeAllListenerFlow" initialState="stopped">
+    <flow name="takeAllListenerFlow" initialState="stopped" processingStrategy="synchronous">
         <fifo-queue:take-all-listener />
         <vm:outbound-endpoint path="testcase.takeAll" />
     </flow> 

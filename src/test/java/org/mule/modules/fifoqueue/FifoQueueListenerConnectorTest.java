@@ -23,6 +23,7 @@ public class FifoQueueListenerConnectorTest extends ConnectorTestCase{
 	//number of queues in test config (to be used by takeAll and peekAll)
 	private int numberOfQueues = 4;
 	private int numberOfQueuesWithTakeListener = 1;
+	private int numberOfQueuesWithPeekListener = 1;
 	
 	private String payload = "Another string ";
 	private MuleClient client;
@@ -70,10 +71,10 @@ public class FifoQueueListenerConnectorTest extends ConnectorTestCase{
 		Flow flow = (Flow) muleContext.getRegistry().lookupFlowConstruct("peekAllListenerFlow");
 		flow.start();
 		
-		//should get 3 messages (3 queues), and 5 messages per queue
+		//should get 2 messages (2 queues), and 5 messages per queue
 		MuleMessage result;
 		
-		for (int j=0; j<(numberOfQueues - numberOfQueuesWithTakeListener); j++){
+		for (int j=0; j<(numberOfQueues - numberOfQueuesWithTakeListener - numberOfQueuesWithPeekListener); j++){
 			for (int i=0; i<loop; i++){
 				result = client.request("vm://testcase.peekAll", DEFAULT_TIMEOUT);
 				Assert.assertEquals(payload + i, result.getPayload());
