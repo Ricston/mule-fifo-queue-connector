@@ -582,7 +582,7 @@ public class FifoQueueConnector {
 			QueuePointer pointer = pointerMapEntry.getValue();
 
 			// skip operation if queue has its own take or peek listener
-			if (!takeCallbacks.containsKey(pointer.getName()) || !peekCallbacks.containsKey(pointer.getName())) {
+			if (!takeCallbacks.containsKey(pointer.getName()) && !peekCallbacks.containsKey(pointer.getName())) {
 				List<Serializable> items = queueToList(pointer);
 				for (Serializable item : items) {
 					Map<String, Object> queueProperties = new HashMap<String, Object>();
