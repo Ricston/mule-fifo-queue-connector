@@ -20,23 +20,33 @@
         <fifo-queue:put queue="queue4"/>
     </flow>
     
-	<flow name="peekListenerFlow">
+    <queued-asynchronous-processing-strategy name="singleThreaded" maxThreads="1" />
+    
+    <vm:connector name="vmConnector">
+    	<dispatcher-threading-profile doThreading="false"/>
+    </vm:connector>
+    
+	<flow name="peekListenerFlow" processingStrategy="singleThreaded">
         <fifo-queue:peek-listener queue="queue1"/>
+        <logger level="INFO" message="Received message from peek listener" />
         <vm:outbound-endpoint path="testcase.peek" />
     </flow>    
     
-    <flow name="takeListenerFlow">
+    <flow name="takeListenerFlow" processingStrategy="singleThreaded">
         <fifo-queue:take-listener queue="queue2"/>
+        <logger level="INFO" message="Received message from take listener" />
         <vm:outbound-endpoint path="testcase.take" />
     </flow> 
     
-    <flow name="peekAllListenerFlow" initialState="stopped" processingStrategy="synchronous">
+    <flow name="peekAllListenerFlow" initialState="stopped" processingStrategy="singleThreaded">
         <fifo-queue:peek-all-listener />
+        <logger level="INFO" message="Received message from peek all listener" />
         <vm:outbound-endpoint path="testcase.peekAll" />
     </flow> 
     
-    <flow name="takeAllListenerFlow" initialState="stopped" processingStrategy="synchronous">
+    <flow name="takeAllListenerFlow" initialState="stopped" processingStrategy="singleThreaded">
         <fifo-queue:take-all-listener />
+        <logger level="INFO" message="Received message from take all listener" />
         <vm:outbound-endpoint path="testcase.takeAll" />
     </flow> 
     
