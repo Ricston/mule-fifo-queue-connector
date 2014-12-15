@@ -3,7 +3,7 @@
  * a copy of which has been included with this distribution in the LICENSE.md file.
  */
 
-package org.mule.modules.fifoqueue;
+package org.mule.modules.fifoqueue.exceptions;
 
 public class OnlyOneListenerPermittedException extends Exception{
 

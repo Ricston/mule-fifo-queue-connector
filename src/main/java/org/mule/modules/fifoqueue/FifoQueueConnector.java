@@ -22,13 +22,15 @@ import org.mule.api.annotations.param.Payload;
 import org.mule.api.callback.SourceCallback;
 import org.mule.api.store.ListableObjectStore;
 import org.mule.api.store.ObjectStoreException;
+import org.mule.modules.fifoqueue.exceptions.OnlyOneAllListenerPermittedException;
+import org.mule.modules.fifoqueue.exceptions.OnlyOneListenerPermittedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * FIFO Queue Connector.
- * 
- * Using an object store to back single threaded queues.
+ * FIFO Queue Connector. A connector that provides FIFO queues which internally uses the Mule Object Store to store the data. This connector was specifically
+ * built to solve a problem with CloudHub where persistent queues are not guaranteed to be FIFO. This connector accepts any type of Object Store to store the
+ * data, which includes persistent and in-memory object stores.
  * 
  * @author MuleSoft, Inc.
  */
@@ -55,13 +57,20 @@ public class FifoQueueConnector {
 	private Map<String, QueuePointer> pointers = new HashMap<String, QueuePointer>();
 
 	/**
-	 * Map for inbound callbacks
+	 * Maps for inbound callbacks, keyed by queue name
 	 */
 	private Map<String, SourceCallback> peekCallbacks = new HashMap<String, SourceCallback>();
 	private Map<String, SourceCallback> takeCallbacks = new HashMap<String, SourceCallback>();
+
+	/**
+	 * Callbacks for fifo-queue:peek-all and fifo-queue:take-all
+	 */
 	private SourceCallback peekAllCallback = null;
 	private SourceCallback takeAllCallback = null;
 
+	/**
+	 * Static values
+	 */
 	private static final String SEPARATOR = ":::";
 	private static final String KEY = "%s" + SEPARATOR + "%d";
 	private static final String STATUS = "status";
@@ -567,11 +576,18 @@ public class FifoQueueConnector {
 	 *            The flow to be invoked
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
+	 * @throws OnlyOneAllListenerPermittedException
+	 *             Only one peak-all is allowed
 	 * @throws Exception
 	 *             Any exception the source callback might throw
 	 */
 	@Source
 	public void peekAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
+
+		if (peekAllCallback != null) {
+			throw new OnlyOneAllListenerPermittedException();
+		}
+
 		peekAllCallback = callback;
 
 		// read messages that are already on the queue (on start up)
@@ -601,11 +617,18 @@ public class FifoQueueConnector {
 	 *            The flow to be invoked
 	 * @throws ObjectStoreException
 	 *             Any error the object store might throw
+	 * @throws OnlyOneAllListenerPermittedException
+	 *             Only one take-all is allowed
 	 * @throws Exception
 	 *             Any exception the source callback might throw
 	 */
 	@Source
-	public void takeAllListener(SourceCallback callback) throws ObjectStoreException, Exception {
+	public void takeAllListener(SourceCallback callback) throws ObjectStoreException, OnlyOneAllListenerPermittedException, Exception {
+
+		if (takeAllCallback != null) {
+			throw new OnlyOneAllListenerPermittedException();
+		}
+
 		takeAllCallback = callback;
 
 		// read messages that are already on the queue (on start up)
