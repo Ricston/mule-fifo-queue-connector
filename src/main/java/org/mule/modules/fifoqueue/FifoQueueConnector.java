@@ -575,9 +575,9 @@ public class FifoQueueConnector {
 	/**
 	 * Register peek callback for all queues (inbound endpoint). Once a message is received on any queue (except the ones that have their own listeners), peek
 	 * will automatically be called and the item is passed to the callback. The name of the queue will be as an inbound property called "queue". N.B. If
-	 * fifo-queue:peek-listener is configured on a queue and 2 messages are received on the same queue, fifo-queue:peek-listener will be invoked twice with the
-	 * same (first) message. Reason: peek does not take the message off the queue. A use case of this would be when connector is configured with a single
-	 * receiver thread and at the end of the flow, fifo-queue:take is invoked to remove the message from the queue.
+	 * fifo-queue:peek-all-listener is configured and 2 messages are received on the same queue, fifo-queue:peek-all-listener will be invoked twice with the
+	 * correct message, however keep in mind that the messages will remain on the queue until fifo-queue:take/fifo-queue:take-all is invoked to remove the
+	 * message from the queue. Useful to keep the message on the queue until all processing is complete.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:peek-all-listener}
 	 * 
