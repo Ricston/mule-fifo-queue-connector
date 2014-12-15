@@ -30,7 +30,10 @@ import org.slf4j.LoggerFactory;
 /**
  * FIFO Queue Connector. A connector that provides FIFO queues which internally uses the Mule Object Store to store the data. This connector was specifically
  * built to solve a problem with CloudHub where persistent queues are not guaranteed to be FIFO. This connector accepts any type of Object Store to store the
- * data, which includes persistent and in-memory object stores.
+ * data, which includes persistent and in-memory object stores. To compliment another use case on CloudHub, this connector associates a status with each queue.
+ * Queues can be marked with status OK or status ERROR. If the queue is marked with error, operations like peek and take will return null. Hence the messages
+ * will keep piling in the queue until it is marked back to status OK. This is useful if you need to stop processing data until an issue is manually resolved.
+ * 
  * 
  * @author MuleSoft, Inc.
  */
