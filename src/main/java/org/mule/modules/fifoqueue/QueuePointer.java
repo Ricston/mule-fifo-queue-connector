@@ -5,17 +5,19 @@
 
 package org.mule.modules.fifoqueue;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class QueuePointer {
 
 	private String name;
-	private long head;
-	private long tail;
+	private AtomicLong head;
+	private AtomicLong tail;
 	private boolean status;
 
 	public QueuePointer(String name) {
 		this.name = name;
-		head = 0L;
-		tail = 0L;
+		head = new AtomicLong(0);
+		tail = new AtomicLong(0);
 		status = true;
 	}
 
@@ -28,27 +30,19 @@ public class QueuePointer {
 	}
 
 	public long getHead() {
-		return head;
+		return head.get();
 	}
 
 	public void setHead(long head) {
-		this.head = head;
+		this.head.set(head);
 	}
 
 	public long getTail() {
-		return tail;
+		return tail.get();
 	}
 
 	public void setTail(long tail) {
-		this.tail = tail;
-	}
-
-	public Long nextHead() {
-		return head++;
-	}
-
-	public Long nextTail() {
-		return tail++;
+		this.tail.set(tail);
 	}
 
 	public boolean isStatus() {
@@ -57,6 +51,14 @@ public class QueuePointer {
 
 	public void setStatus(boolean status) {
 		this.status = status;
+	}
+	
+	public long fetchAndAddHead(){
+		return this.head.getAndAdd(1);
+	}
+	
+	public long fetchAndAddTail(){
+		return this.tail.getAndAdd(1);
 	}
 
 }

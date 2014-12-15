@@ -172,8 +172,7 @@ public class FifoQueueConnector {
 	public void put(String queue, @Payload Serializable content) throws ObjectStoreException, Exception {
 
 		QueuePointer pointer = getPointer(queue);
-		objectStore.store(formatQueueKey(queue, pointer.getTail()), content);
-		pointer.nextTail();
+		objectStore.store(formatQueueKey(queue, pointer.fetchAndAddTail()), content);
 
 		// check for callbacks
 		SourceCallback callback = null;
@@ -266,8 +265,7 @@ public class FifoQueueConnector {
 	protected Serializable take(QueuePointer pointer) throws ObjectStoreException {
 
 		if (pointer.isStatus() && size(pointer) > 0) {
-			Serializable item = objectStore.remove(formatQueueKey(pointer.getName(), pointer.getHead()));
-			pointer.nextHead();
+			Serializable item = objectStore.remove(formatQueueKey(pointer.getName(), pointer.fetchAndAddHead()));
 			return item;
 		}
 
