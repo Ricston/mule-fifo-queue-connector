@@ -98,12 +98,12 @@ public class FifoQueueConnector {
 		// encountering this queue, so we need to create it
 		if (pointer == null) {
 
-			//create pointer and put in map, only if it does not already exist
+			// create pointer and put in map, only if it does not already exist
 			pointer = new QueuePointer(queue);
 			QueuePointer pointerInMap = pointers.putIfAbsent(queue, pointer);
-			
-			//if we managed to put pointer in map, then set queue status to OK
-			if (pointer == pointerInMap){
+
+			// if we managed to put pointer in map, then set queue status to OK
+			if (pointer == pointerInMap) {
 				queueStatus(pointer, true);
 			}
 		}
@@ -171,10 +171,9 @@ public class FifoQueueConnector {
 	}
 
 	/**
-	 * Put a new message on the queue. This will automatically trigger callbacks.
-	 * 
-	 * Callback priority: fifo-queue:take-listener on specific queue, followed by fifo-queue:take-all-listener, followed by fifo-queue:peek-listener on specific
-	 * queue, followed by fifo-queue:peek-all-listener. Only ONE callback will be called.
+	 * Put a new message on the queue. This will automatically trigger callbacks. Callback priority: fifo-queue:take-listener on specific queue, followed by
+	 * fifo-queue:take-all-listener, followed by fifo-queue:peek-listener on specific queue, followed by fifo-queue:peek-all-listener. Only ONE callback will be
+	 * called.
 	 * 
 	 * {@sample.xml ../../../doc/fifo-queue-connector.xml.sample fifo-queue:put}
 	 * 
