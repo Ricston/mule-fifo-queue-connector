@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -57,7 +58,7 @@ public class FifoQueueConnector {
 	/**
 	 * A map used to store the queues' head and tail pointers, keyed by queue name
 	 */
-	private Map<String, QueuePointer> pointers = new HashMap<String, QueuePointer>();
+	private ConcurrentHashMap<String, QueuePointer> pointers = new ConcurrentHashMap<String, QueuePointer>();
 
 	/**
 	 * Maps for inbound callbacks, keyed by queue name
@@ -96,9 +97,15 @@ public class FifoQueueConnector {
 		// if the pointer does not exist, its the first time we are
 		// encountering this queue, so we need to create it
 		if (pointer == null) {
+
+			//create pointer and put in map, only if it does not already exist
 			pointer = new QueuePointer(queue);
-			pointers.put(queue, pointer);
-			queueStatus(pointer, true);
+			QueuePointer pointerInMap = pointers.putIfAbsent(queue, pointer);
+			
+			//if we managed to put pointer in map, then set queue status to OK
+			if (pointer == pointerInMap){
+				queueStatus(pointer, true);
+			}
 		}
 
 		return pointer;
