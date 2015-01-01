@@ -199,14 +199,18 @@ public class FifoQueueConnector {
 		if ((callback = takeCallbacks.get(queue)) != null) {
 			callback.process(take(pointer));
 		} else if (takeAllCallback != null) {
-			takeAllCallback.process(take(pointer));
+			Map<String, Object> queueProperties = new HashMap<String, Object>();
+			queueProperties.put(QUEUE_NAME_PROPERTY, queue);
+			takeAllCallback.process(take(pointer), queueProperties);
 		}
 		// If we have a peek callback, use the content passed as parameter rather then peek(pointer). We cannot use peek(pointer) because if more than one
 		// element is on the queue, peek will always return the first element.
 		else if ((callback = peekCallbacks.get(queue)) != null) {
 			callback.process(content);
 		} else if (peekAllCallback != null) {
-			peekAllCallback.process(content);
+			Map<String, Object> queueProperties = new HashMap<String, Object>();
+			queueProperties.put(QUEUE_NAME_PROPERTY, queue);
+			peekAllCallback.process(content, queueProperties);
 		}
 	}
 
