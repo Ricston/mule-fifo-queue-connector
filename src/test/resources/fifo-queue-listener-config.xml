@@ -14,10 +14,10 @@
     <fifo-queue:config name="fifoQueueConnector" objectStore-ref="_defaultUserObjectStore" />
 
     <flow name="putFlow">
-        <fifo-queue:put queue="queue1"/>
-        <fifo-queue:put queue="queue2"/>
-        <fifo-queue:put queue="queue3"/>
-        <fifo-queue:put queue="queue4"/>
+        <fifo-queue:put queue="queue1" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue2" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue3" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue4" config-ref="fifoQueueConnector"/>
     </flow>
     
     <queued-asynchronous-processing-strategy name="singleThreaded" maxThreads="1" />
@@ -27,25 +27,25 @@
     </vm:connector>
     
 	<flow name="peekListenerFlow" processingStrategy="singleThreaded">
-        <fifo-queue:peek-listener queue="queue1"/>
+        <fifo-queue:peek-listener queue="queue1" config-ref="fifoQueueConnector"/>
         <logger level="INFO" message="Received message from peek listener" />
         <vm:outbound-endpoint path="testcase.peek" />
     </flow>    
     
     <flow name="takeListenerFlow" processingStrategy="singleThreaded">
-        <fifo-queue:take-listener queue="queue2"/>
+        <fifo-queue:take-listener queue="queue2" config-ref="fifoQueueConnector"/>
         <logger level="INFO" message="Received message from take listener" />
         <vm:outbound-endpoint path="testcase.take" />
     </flow> 
     
     <flow name="peekAllListenerFlow" initialState="stopped" processingStrategy="singleThreaded">
-        <fifo-queue:peek-all-listener />
+        <fifo-queue:peek-all-listener config-ref="fifoQueueConnector" />
         <logger level="INFO" message="Received message from peek all listener" />
         <vm:outbound-endpoint path="testcase.peekAll" />
     </flow> 
     
     <flow name="takeAllListenerFlow" initialState="stopped" processingStrategy="singleThreaded">
-        <fifo-queue:take-all-listener />
+        <fifo-queue:take-all-listener config-ref="fifoQueueConnector" />
         <logger level="INFO" message="Received message from take all listener" />
         <vm:outbound-endpoint path="testcase.takeAll" />
     </flow> 

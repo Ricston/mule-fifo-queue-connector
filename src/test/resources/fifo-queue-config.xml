@@ -12,51 +12,51 @@
     <fifo-queue:config name="fifoQueueConnector" objectStore-ref="_defaultUserObjectStore" />
 
     <flow name="putFlow">
-        <fifo-queue:put queue="queue1"/>
-        <fifo-queue:put queue="queue2"/>
-        <fifo-queue:put queue="queue3"/>
-        <fifo-queue:put queue="queue4"/>
-        <fifo-queue:put queue="queue5"/>
+        <fifo-queue:put queue="queue1" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue2" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue3" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue4" config-ref="fifoQueueConnector"/>
+        <fifo-queue:put queue="queue5" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="sizeFlow">
-        <fifo-queue:size queue="queue1"/>
+        <fifo-queue:size queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="peekFlow">
-        <fifo-queue:peek queue="queue1"/>
+        <fifo-queue:peek queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="takeFlow">
-        <fifo-queue:take queue="queue1"/>
+        <fifo-queue:take queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="markErrorFlow">
-        <fifo-queue:mark-error queue="queue1"/>
+        <fifo-queue:mark-error queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="resolveErrorFlow">
-        <fifo-queue:resolve-error queue="queue1"/>
+        <fifo-queue:resolve-error queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="statusFlow">
-        <fifo-queue:status queue="queue1"/>
+        <fifo-queue:status queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="peekAllFlow">
-        <fifo-queue:peek-all/>
+        <fifo-queue:peek-all config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="takeAllFlow">
-        <fifo-queue:take-all/>
+        <fifo-queue:take-all config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="drainFlow">
-        <fifo-queue:drain queue="queue1"/>
+        <fifo-queue:drain queue="queue1" config-ref="fifoQueueConnector"/>
     </flow>
     
     <flow name="drainAllFlow">
-        <fifo-queue:drain-all/>
+        <fifo-queue:drain-all config-ref="fifoQueueConnector"/>
     </flow>
     
     
