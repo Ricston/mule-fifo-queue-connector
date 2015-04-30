@@ -7,3 +7,5 @@ flows
 *.class
 .mule
 .DS_Store
+.idea
+*.iml
