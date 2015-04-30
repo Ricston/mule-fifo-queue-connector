@@ -22,3 +22,4 @@ For information about usage our documentation at https://github.com/Ricston/mule
 # Reporting Issues
 
 We use GitHub:Issues for tracking issues with this connector. You can report new issues at this link https://github.com/Ricston/mule-fifo-queue-connector/issues.
+=======
