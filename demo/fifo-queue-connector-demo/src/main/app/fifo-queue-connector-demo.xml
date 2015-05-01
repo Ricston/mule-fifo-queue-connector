@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:fifo-queue="http://www.mulesoft.org/schema/mule/fifo-queue" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.6.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/fifo-queue http://www.mulesoft.org/schema/mule/fifo-queue/current/mule-fifo-queue.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <fifo-queue:config name="FifoQueue" objectStore-ref="_defaultUserObjectStore" doc:name="FifoQueue"/>
+    <flow name="put-flow" doc:name="put-flow">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="put" doc:name="HTTP"/>
+        <fifo-queue:put config-ref="FifoQueue" queue="test.queue" doc:name="FifoQueuePut"/>
+    </flow>
+    <flow name="mark-error-flow" doc:name="mark-error-flow">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="mark-error" doc:name="HTTP"/>
+        <fifo-queue:mark-error config-ref="FifoQueue" queue="test.queue" doc:name="FifoQueue Mark Error"/>
+    </flow>
+    <flow name="resolve-error-flow" doc:name="resolve-error-flow">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="resolve-error" doc:name="HTTP"/>
+        <fifo-queue:resolve-error config-ref="FifoQueue" queue="test.queue" doc:name="FifoQueue Resolve Error"/>
+    </flow>
+    <flow name="listener-flow" doc:name="listener-flow">
+        <fifo-queue:take-listener config-ref="FifoQueue" queue="test.queue" doc:name="FifoQueue Take All"/>
+        <logger message="Listener: #[message.payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="poller-flow" doc:name="poller-flow">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="1000"/>
+            <fifo-queue:take-all config-ref="FifoQueue" doc:name="FifoQueue Take all"/>
+        </poll>
+        <logger message="Poller: #[message.payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+</mule>
