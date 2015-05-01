@@ -192,6 +192,22 @@ public class FifoQueueConnector {
 		QueuePointer pointer = getPointer(queue);
 		objectStore.store(formatQueueKey(queue, pointer.fetchAndAddTail()), content);
 
+		processListeners(pointer, content);
+	}
+	
+	/**
+	 * If this queue has any listeners associated with it, execute them
+	 * 
+	 * @param pointer The queue pointer
+	 * @param content The content put on the queue
+	 * @throws ObjectStoreException Any error the object store might throw
+	 * @throws Exception Any callback error
+	 * @return True if the message was processed by a listener
+	 */
+	protected boolean processListeners(QueuePointer pointer, Serializable content) throws ObjectStoreException, Exception{
+		
+		String queue = pointer.getName();
+		
 		//if the queue is marked as error, we do not process it
 		if (pointer.isStatus()){
 			// check for callbacks
@@ -199,22 +215,37 @@ public class FifoQueueConnector {
 	
 			// If we have a take callback, take/remove the element off the queue before calling the callback.
 			if ((callback = takeCallbacks.get(queue)) != null) {
-				callback.process(take(pointer));
+				Serializable item = take(pointer);
+				
+				if(item != null){
+					callback.process(item);
+					return true;
+				}
 			} else if (takeAllCallback != null) {
-				Map<String, Object> queueProperties = new HashMap<String, Object>();
-				queueProperties.put(QUEUE_NAME_PROPERTY, queue);
-				takeAllCallback.process(take(pointer), queueProperties);
+				Serializable item = take(pointer);
+				
+				if(item != null){
+					Map<String, Object> queueProperties = new HashMap<String, Object>();
+					queueProperties.put(QUEUE_NAME_PROPERTY, queue);
+					takeAllCallback.process(item, queueProperties);
+					return true;
+				}
+				
 			}
 			// If we have a peek callback, use the content passed as parameter rather then peek(pointer). We cannot use peek(pointer) because if more than one
 			// element is on the queue, peek will always return the first element.
 			else if ((callback = peekCallbacks.get(queue)) != null) {
 				callback.process(content);
+				return true;
 			} else if (peekAllCallback != null) {
 				Map<String, Object> queueProperties = new HashMap<String, Object>();
 				queueProperties.put(QUEUE_NAME_PROPERTY, queue);
 				peekAllCallback.process(content, queueProperties);
+				return true;
 			}
 		}
+		
+		return false;
 	}
 
 	/**
