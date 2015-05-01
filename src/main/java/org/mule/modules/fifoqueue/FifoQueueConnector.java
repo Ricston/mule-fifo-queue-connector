@@ -142,7 +142,7 @@ public class FifoQueueConnector {
 			else {
 				Long sequenceNumber = Long.parseLong(separatedKey[1]);
 
-				if (pointer.getHead() > sequenceNumber) {
+				if (pointer.getHead() > sequenceNumber || pointer.getHead() == 0) {
 					pointer.setHead(sequenceNumber);
 				}
 
@@ -192,25 +192,28 @@ public class FifoQueueConnector {
 		QueuePointer pointer = getPointer(queue);
 		objectStore.store(formatQueueKey(queue, pointer.fetchAndAddTail()), content);
 
-		// check for callbacks
-		SourceCallback callback = null;
-
-		// If we have a take callback, take/remove the element off the queue before calling the callback.
-		if ((callback = takeCallbacks.get(queue)) != null) {
-			callback.process(take(pointer));
-		} else if (takeAllCallback != null) {
-			Map<String, Object> queueProperties = new HashMap<String, Object>();
-			queueProperties.put(QUEUE_NAME_PROPERTY, queue);
-			takeAllCallback.process(take(pointer), queueProperties);
-		}
-		// If we have a peek callback, use the content passed as parameter rather then peek(pointer). We cannot use peek(pointer) because if more than one
-		// element is on the queue, peek will always return the first element.
-		else if ((callback = peekCallbacks.get(queue)) != null) {
-			callback.process(content);
-		} else if (peekAllCallback != null) {
-			Map<String, Object> queueProperties = new HashMap<String, Object>();
-			queueProperties.put(QUEUE_NAME_PROPERTY, queue);
-			peekAllCallback.process(content, queueProperties);
+		//if the queue is marked as error, we do not process it
+		if (pointer.isStatus()){
+			// check for callbacks
+			SourceCallback callback = null;
+	
+			// If we have a take callback, take/remove the element off the queue before calling the callback.
+			if ((callback = takeCallbacks.get(queue)) != null) {
+				callback.process(take(pointer));
+			} else if (takeAllCallback != null) {
+				Map<String, Object> queueProperties = new HashMap<String, Object>();
+				queueProperties.put(QUEUE_NAME_PROPERTY, queue);
+				takeAllCallback.process(take(pointer), queueProperties);
+			}
+			// If we have a peek callback, use the content passed as parameter rather then peek(pointer). We cannot use peek(pointer) because if more than one
+			// element is on the queue, peek will always return the first element.
+			else if ((callback = peekCallbacks.get(queue)) != null) {
+				callback.process(content);
+			} else if (peekAllCallback != null) {
+				Map<String, Object> queueProperties = new HashMap<String, Object>();
+				queueProperties.put(QUEUE_NAME_PROPERTY, queue);
+				peekAllCallback.process(content, queueProperties);
+			}
 		}
 	}
 
