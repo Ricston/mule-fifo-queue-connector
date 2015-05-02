@@ -8,8 +8,10 @@ package org.mule.modules.fifoqueue;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
@@ -123,7 +125,9 @@ public class FifoQueueConnector {
 		objectStore.open();
 
 		List<Serializable> keys = objectStore.allKeys();
-
+		
+		Set<String> startsAtZero = new HashSet<String>();
+		
 		for (Serializable key : keys) {
 			String stringKey = (String) key;
 			String[] separatedKey = stringKey.split(SEPARATOR);
@@ -141,8 +145,20 @@ public class FifoQueueConnector {
 			// of the entry in the object store
 			else {
 				Long sequenceNumber = Long.parseLong(separatedKey[1]);
-
-				if (pointer.getHead() > sequenceNumber || pointer.getHead() == 0) {
+				
+				//if sequence number == 0, then this is the first object in the queue,
+				//hence the head must be zero 
+				if (sequenceNumber == 0){
+					startsAtZero.add(queue);
+					pointer.setHead(sequenceNumber);
+				}
+				//only set the head of the queue under 2 conditions, 
+				//if the head is not discovered to be zero in the above if,
+				//or if the sequence numebr is less then the head.
+				//if the head is zero but was not discovered to be zero by the above if condition,
+				//it means it was only initialised as zero
+				else if (startsAtZero.contains(queue) == false &&
+						(pointer.getHead() > sequenceNumber || pointer.getHead() == 0)) {
 					pointer.setHead(sequenceNumber);
 				}
 
