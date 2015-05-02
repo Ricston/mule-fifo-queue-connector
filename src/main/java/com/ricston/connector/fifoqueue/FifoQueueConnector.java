@@ -3,7 +3,7 @@
  * a copy of which has been included with this distribution in the LICENSE.md file.
  */
 
-package org.mule.modules.fifoqueue;
+package com.ricston.connector.fifoqueue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,10 +25,11 @@ import org.mule.api.annotations.param.Payload;
 import org.mule.api.callback.SourceCallback;
 import org.mule.api.store.ListableObjectStore;
 import org.mule.api.store.ObjectStoreException;
-import org.mule.modules.fifoqueue.exceptions.OnlyOneAllListenerPermittedException;
-import org.mule.modules.fifoqueue.exceptions.OnlyOneListenerPermittedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.ricston.connector.fifoqueue.exceptions.OnlyOneAllListenerPermittedException;
+import com.ricston.connector.fifoqueue.exceptions.OnlyOneListenerPermittedException;
 
 /**
  * FIFO Queue Connector. A connector that provides FIFO queues which internally uses the Mule Object Store to store the data. This connector was specifically

@@ -8,7 +8,7 @@
  * a copy of which has been included with this distribution in the LICENSE.md file.
  */
 
-package org.mule.modules.fifoqueue;
+package com.ricston.connector.fifoqueue;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -22,9 +22,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mule.api.MuleEvent;
 import org.mule.api.registry.MuleRegistry;
-import org.mule.modules.fifoqueue.FifoQueueConnector;
 import org.mule.modules.tests.ConnectorTestCase;
 import org.mule.transport.NullPayload;
+
+import com.ricston.connector.fifoqueue.FifoQueueConnector;
 
 public class FifoQueueConnectorTest extends ConnectorTestCase {
 	
